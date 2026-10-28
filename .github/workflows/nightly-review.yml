@@ -1,0 +1,60 @@
+name: Trigger Nightly AI Code Review
+on:
+  schedule:
+    # Runs at 02:00 UTC every night
+    - cron: '0 2 * * *'
+  # Allows manual triggering from GitHub UI
+  workflow_dispatch:
+    inputs:
+      owner:
+        description: 'Target Repository Owner (optional)'
+        required: false
+        type: string
+      repo:
+        description: 'Target Repository Name (optional)'
+        required: false
+        type: string
+      installationId:
+        description: 'GitHub App Installation ID (optional)'
+        required: false
+        type: string
+
+jobs:
+  trigger-nightly-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Trigger Request to Agent
+        env:
+          AGENT_URL: ${{ secrets.AGENT_SERVER_URL }}
+          JOB_SECRET: ${{ secrets.NIGHTLY_JOB_SECRET }}
+        run: |
+          if [ -z "$AGENT_URL" ]; then
+            echo "::error::AGENT_SERVER_URL secret is not configured"
+            exit 1
+          fi
+
+          PAYLOAD="{}"
+          if [ -n "${{ inputs.owner }}" ] && [ -n "${{ inputs.repo }}" ]; then
+            PAYLOAD=$(jq -n \
+              --arg owner "${{ inputs.owner }}" \
+              --arg repo "${{ inputs.repo }}" \
+              --arg inst "${{ inputs.installationId }}" \
+              '{owner: $owner, repo: $repo, installationId: ($inst | tonumber)}')
+          fi
+
+          echo "Triggering nightly review at $AGENT_URL/api/nightly/trigger..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$AGENT_URL/api/nightly/trigger" \
+            -H "Content-Type: application/json" \
+            -H "x-nightly-secret: $JOB_SECRET" \
+            -d "$PAYLOAD")
+
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          BODY=$(echo "$RESPONSE" | sed -e 's/HTTP_STATUS:.*//g')
+
+          echo "Response Body: $BODY"
+          echo "HTTP Code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -ne 202 ]; then
+            echo "::error::Trigger failed with HTTP $HTTP_CODE"
+            exit 1
+          fi

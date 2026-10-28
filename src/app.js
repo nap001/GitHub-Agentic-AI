@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import webhookRouter from './routes/webhook.routes.js';
+import nightlyRouter from './routes/nightly.routes.js';
 
 const app = express();
 
@@ -33,6 +34,9 @@ app.get('/health', (req, res) => {
 
 // Register webhook routes
 app.use('/api/webhooks', webhookRouter);
+
+// Register nightly review routes
+app.use('/api/nightly', nightlyRouter);
 
 // 404 Handler
 app.use((req, res) => {
