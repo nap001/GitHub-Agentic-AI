@@ -1,0 +1,40 @@
+{
+  "name": "autonomous-code-review-agent",
+  "version": "1.0.0",
+  "description": "Autonomous GitHub App for PR code review and hardware/algorithmic performance optimization",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.40",
+    "@langchain/langgraph": "^0.2.55",
+    "@langchain/openai": "^0.4.4",
+    "@octokit/auth-app": "^7.1.5",
+    "@octokit/rest": "^21.1.1",
+    "@octokit/webhooks-methods": "^5.1.1",
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3",
+    "parse-diff": "^0.11.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "keywords": [
+    "github-app",
+    "code-review",
+    "langchain",
+    "langgraph",
+    "performance-optimization",
+    "simd",
+    "openmp"
+  ],
+  "author": "",
+  "license": "MIT"
+}
